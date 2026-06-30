@@ -404,6 +404,12 @@ const CONCEPTS = [
       { type: "text", content: "MDE is the smallest real difference your experiment is designed to catch. It's a decision you make BEFORE running the test \u2014 not something you discover after. Think of it as the resolution of your microscope: finer resolution costs more (bigger sample)." },
       { type: "analogy", icon: "\u2696\uFE0F", title: "The Bathroom Scale", content: "A scale accurate to \u00B11 pound can't detect a 0.1-pound loss. It easily detects a 5-pound loss. MDE is choosing the precision of your scale. A tiny MDE requires an extremely precise (expensive) scale. A large MDE works on a cheap one." },
       { type: "analogy", icon: "\uD83D\uDCFB", title: "The Radio Signal", content: "MDE is like how faint a radio signal you want to pick up. Strong signal (large MDE) = any cheap radio works. Weak signal (small MDE) = you need a powerful antenna and clear conditions. A smaller MDE = more users to separate signal from noise." },
+      { type: "example", scenario: "Your homepage hero banner and your final 'Place order' button both need a redesign. Same statistics, wildly different experiments. Why?", steps: [
+        "The hero banner is seen by 100% of visitors. With that much traffic you can resolve a microscopic 0.2% lift, like an electron microscope.",
+        "The 'Place order' button is only seen by the ~5% who reach the end of the funnel. Same traffic budget, a tiny fraction of the sample.",
+        "Set a 0.2% MDE on the order button and the math demands months, sometimes years, of running.",
+        "So deep-funnel tests must be bold swings. Design the button test around a 5% MDE, not 0.2%.",
+      ], punch: "MDE is not a wish, it is a budget. Match it to where the metric sits in the funnel and how much traffic actually reaches it." },
       { type: "key", content: "For binary metrics, use relative lift (e.g. \"detect a 10% improvement on a 5% baseline = 5.0% \u2192 5.5%\"). For continuous metrics, use absolute change (e.g. \"detect a $2 increase in AOV\"). Ask: is this the smallest change that justifies shipping the feature?" },
       { type: "impact", content: "Halving the MDE quadruples the required sample size. This is the single most expensive knob. Before committing to a tiny MDE, ask: would only a larger effect be worth acting on anyway?" },
     ],
@@ -419,11 +425,32 @@ const CONCEPTS = [
     ],
   },
   {
+    id: "pvalue", emoji: "\u2696\uFE0F", title: "P-Value", subtitle: "Could this result just be noise? (Frequentist)", color: V.accent,
+    sections: [
+      { type: "text", content: "The p-value answers one narrow question: if the feature truly did nothing, how surprising is the data you actually saw? A small p-value (under 0.05) means 'this would be weird if nothing changed,' so you reject the idea that nothing changed. Confidence is the bar you set in advance; the p-value is the evidence this one test produced against it." },
+      { type: "analogy", icon: "\u2696\uFE0F", title: "Law: the strength of the evidence", content: "Confidence sets the bar ('beyond reasonable doubt' = a 5% threshold). The p-value is how strong the evidence in this particular trial was. p=0.01 clears the bar easily. p=0.20 does not: the data is perfectly consistent with the feature doing nothing at all." },
+      { type: "example", scenario: "You test 20 button colors at once to see which lifts clicks. Green comes back at p=0.04. A winner?", steps: [
+        "Probably not. A 5% threshold means 1 in 20 flat tests will look 'significant' by pure chance.",
+        "Test 20 identical-in-truth things and finding one 'winner' is exactly what randomness predicts.",
+        "The p-value assumes you asked one pre-specified question. Go fishing across 20 metrics and it stops protecting you.",
+        "This is the multiple-comparisons trap, the famous 'green jelly beans cause acne' cartoon.",
+      ], punch: "Pick one primary metric before the test. A p-value only means something for the question you committed to in advance." },
+      { type: "key", content: "The p-value is a guardrail, not a compass. It tells you the result is unlikely to be pure chance. It does NOT tell you the effect is large, important, or that it will replicate. For that you need the effect size and the P-Move." },
+      { type: "watch", content: "'Not significant' does not mean 'no effect' \u2014 it often means the test was underpowered. And a microscopic p-value on a giant sample can flag a trivial, useless effect. Always read the p-value next to power and effect size." },
+    ],
+  },
+  {
     id: "power", emoji: "\uD83D\uDCAA", title: "Statistical Power (1 \u2212 \u03B2)", subtitle: "Your ability to catch real wins", color: V.purple,
     sections: [
       { type: "text", content: "Power is the probability of detecting a real effect when it truly exists. At 80% power, if the change genuinely helps, you detect it 80% of the time. The other 20%? You miss it and wrongly conclude \"no effect\" \u2014 a false negative." },
       { type: "analogy", icon: "\uD83C\uDFA3", title: "The Fishing Net", content: "Power is net quality. An 80% net catches 8 of 10 fish (real effects). 2 escape (false negatives). A 90% net catches 9 of 10 but costs more (more data). Choose based on how bad it is to miss a fish \u2014 for high-stakes decisions, use 90%." },
       { type: "analogy", icon: "\uD83D\uDD26", title: "The Flashlight", content: "Searching a dark room for a coin. Power = flashlight brightness. At 80% you find most coins. At 50% (underpowered test) you miss half and conclude \"nothing here\" when there is. More data = brighter flashlight = fewer missed opportunities." },
+      { type: "example", scenario: "You ship a genuinely good AI search filter that truly lifts satisfaction by 4%. You budget one week of traffic. The test reads 'not significant,' so you kill it. What went wrong?", steps: [
+        "One week gave this test only ~30% statistical power. The lens was barely open.",
+        "At 30% power, even a real 4% effect shows up as 'significant' less than a third of the time.",
+        "You read 'not significant' and concluded the filter does nothing. That is a Type II error: a false negative.",
+        "Three weeks of traffic would have reached 80% power and almost certainly caught it.",
+      ], punch: "A 'no effect' result from an underpowered test means nothing. Power is your ability to see, and you commit to it before you look." },
       { type: "key", content: "80% is the default. Use 90% when missing a real effect is costly (e.g., you'd abandon a project based on the result). Never go below 70% \u2014 you'd be essentially flipping a biased coin." },
       { type: "watch", content: "Underpowered tests are the #1 experiment mistake. Teams run tests with too little traffic, see \"not significant,\" and conclude the feature doesn't work \u2014 when they simply couldn't detect it. Always calculate sample size BEFORE starting." },
     ],
@@ -464,6 +491,12 @@ const CONCEPTS = [
       { type: "text", content: "P-Move is the probability that the metric truly moves in the direction you want if you ship, given both the data AND the platform's history. Where the p-value asks 'is this just noise?', the P-Move asks 'will this actually hold up?' One is a noise filter. The other is a business compass." },
       { type: "analogy", icon: "🌦️", title: "Meteorology: the forecast", content: "A forecast does not just look at today's sky. It blends today's reading with decades of patterns. You launch Monday, the dashboard screams +30% at p=0.001, and you want to ship by lunch. But the P-Move says only 65%, because its prior knows Monday traffic is volatile and unrepresentative. It suppresses your excitement until the lift survives a full seven-day week." },
       { type: "analogy", icon: "✈️", title: "The two-gauge cockpit", content: "The p-value is your stall warning: a frequentist guardrail that screams when the data is too weird to be chance. The P-Move is your GPS heading: the business compass that says where you will actually end up. Pilots do not pick one gauge over the other. Neither should you." },
+      { type: "example", scenario: "Monday 2pm: the dashboard shows +30% at p=0.001. You want to ship immediately. The P-Move says only 65%. Who is right?", steps: [
+        "The p-value only sees today's data, and today's data looks loud and clear.",
+        "The P-Move blends today's data with the platform's history, which knows Monday traffic is volatile and unrepresentative.",
+        "It mathematically suppresses the spike, demanding the +30% survive a full seven-day cycle before it forecasts a true win.",
+        "By Thursday the lift settles to +3%. The P-Move was right to make you wait.",
+      ], punch: "The p-value says 'not noise, right now.' The P-Move says 'still true after the weekend.' Ship on the second one." },
       { type: "key", content: "Above 80% P-Move is a confident ship. 70 to 80% is trending, so gather more data. Around 50% is a coin toss. Use the P-Move as the business decision and the p-value as the noise guardrail." },
       { type: "watch", content: "A significant p-value paired with a low P-Move is the classic False Alarm: it looks real today, but the prior says it will not replicate. Never ship on the p-value alone." },
     ],
@@ -542,6 +575,28 @@ const CASE_STUDIES = [
   },
 ];
 
+/* ─── Flowchart primitives (Learn course) ─── */
+function FlowBox({ num, title, desc, color, tag }) {
+  return (
+    <div style={{ display: "flex", gap: 14, alignItems: "center", background: V.surface, border: "1px solid " + V.borderLight, borderLeft: "4px solid " + color, borderRadius: V.radius, padding: "15px 20px", boxShadow: V.shadow }}>
+      <div style={{ width: 34, height: 34, borderRadius: 10, background: color + "16", color, fontFamily: V.mono, fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{num}</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: V.text, fontFamily: V.font }}>{title}</div>
+        <div style={{ fontSize: 13, color: V.textSecondary, fontFamily: V.font, marginTop: 2, lineHeight: 1.5 }}>{desc}</div>
+      </div>
+      {tag && <div style={{ fontSize: 11, fontWeight: 700, color, fontFamily: V.font, background: color + "12", padding: "4px 9px", borderRadius: 6, whiteSpace: "nowrap" }}>{tag}</div>}
+    </div>
+  );
+}
+function FlowArrow() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3px 0" }}>
+      <div style={{ width: 2, height: 16, background: V.border }} />
+      <div style={{ color: V.textTertiary, fontSize: 10, lineHeight: 1, marginTop: -3 }}>{"▼"}</div>
+    </div>
+  );
+}
+
 function LearnTab() {
   const [expandedConcept, setExpandedConcept] = useState(null);
   const [expandedCase, setExpandedCase] = useState(null);
@@ -585,15 +640,30 @@ function LearnTab() {
         </table>
       </div>
     );
+    if (s.type === "example") return (
+      <div key={i} style={{ border: "1px solid " + concept.color + "26", borderRadius: V.radius, overflow: "hidden", marginBottom: 14 }}>
+        <div style={{ background: concept.color + "0e", padding: "10px 16px", fontSize: 12, fontWeight: 700, color: concept.color, fontFamily: V.font }}>{"🔬"} Worked example</div>
+        <div style={{ padding: "16px 18px" }}>
+          {s.scenario && <p style={{ fontSize: 14, color: V.text, fontWeight: 500, lineHeight: 1.65, fontFamily: V.font, margin: "0 0 14px" }}>{s.scenario}</p>}
+          {s.steps && s.steps.map((step, si) => (
+            <div key={si} style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 9 }}>
+              <div style={{ width: 22, height: 22, borderRadius: 11, background: concept.color + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: concept.color, fontFamily: V.mono, flexShrink: 0, marginTop: 1 }}>{si + 1}</div>
+              <div style={base}>{step}</div>
+            </div>
+          ))}
+          {s.punch && <div style={{ background: concept.color + "0c", borderRadius: 8, padding: "12px 14px", marginTop: 14, fontSize: 13, color: V.textSecondary, lineHeight: 1.6, fontFamily: V.font }}><strong style={{ color: concept.color }}>The lesson:</strong> {s.punch}</div>}
+        </div>
+      </div>
+    );
     return null;
   };
 
   return (
     <div style={{ maxWidth: 820, margin: "0 auto" }}>
       <div style={{ background: "linear-gradient(135deg, " + V.teal + "08, " + V.accent + "06)", borderRadius: V.radiusLg, padding: "32px 36px", marginBottom: 36, border: "1px solid " + V.teal + "15" }}>
-        <div style={{ fontSize: 28, fontWeight: 800, color: V.text, fontFamily: V.font, letterSpacing: -0.5, marginBottom: 8 }}>A/B Testing Fundamentals</div>
-        <p style={{ fontSize: 15, color: V.textSecondary, lineHeight: 1.7, fontFamily: V.font, margin: 0, maxWidth: 600 }}>
-          Everything you need to design an experiment, plus the mental models to read it once results land. Real analogies, six worked case studies, and a pre-launch checklist.
+        <div style={{ fontSize: 28, fontWeight: 800, color: V.text, fontFamily: V.font, letterSpacing: -0.5, marginBottom: 8 }}>Experimentation, Start to Finish</div>
+        <p style={{ fontSize: 15, color: V.textSecondary, lineHeight: 1.7, fontFamily: V.font, margin: 0, maxWidth: 640 }}>
+          A short course in four steps: pick a metric, design the test, choose a method, and read the result. Follow the flowchart, then dig into the concept reference, worked examples, and case studies below.
         </p>
       </div>
 
@@ -603,17 +673,123 @@ function LearnTab() {
           An A/B test splits users into groups, shows each a different experience, and checks if the difference in a metric is real or just random noise. The challenge: random variation ALWAYS exists. Even with no change, Group A's rate will never exactly equal Group B's.
         </p>
         <p style={{ fontSize: 14, color: V.textSecondary, lineHeight: 1.75, fontFamily: V.font, margin: "0 0 16px" }}>
-          You need enough data to tell the difference between "this is a real improvement" and "this is just a lucky fluctuation." The first six concepts below determine how much data that takes. The last two, P-Move and the Prior, are about reading the result once it lands.
+          You need enough data to tell the difference between "this is a real improvement" and "this is just a lucky fluctuation." Some concepts below (SD, MDE, confidence, power) decide how much data that takes. The rest (the p-value, the P-Move, the Prior) are about reading the result once it lands.
         </p>
         <div style={{ background: V.tealBg, borderRadius: V.radiusSm, padding: "16px 20px", fontSize: 14, color: V.text, fontFamily: V.font, lineHeight: 1.65, fontWeight: 500 }}>
           <strong style={{ color: V.teal }}>The formula in plain English:</strong> Sample size = the price you pay to hear a quiet signal (small MDE) through loud noise (high SD) with high certainty (confidence) and high sensitivity (power).
         </div>
       </div>
 
+      {/* The Experiment Lifecycle (flowchart) */}
+      <div style={{ marginBottom: 48 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: V.textTertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12, fontFamily: V.font }}>The Experiment Lifecycle</div>
+        <p style={{ fontSize: 14, color: V.textSecondary, fontFamily: V.font, margin: "0 0 18px", lineHeight: 1.6 }}>Every experiment walks the same four steps. Get step 1 wrong and nothing downstream can save it. Here is the whole journey on one map.</p>
+        <div style={{ background: V.surface, borderRadius: V.radiusLg, border: "1px solid " + V.borderLight, boxShadow: V.shadow, padding: "24px 24px" }}>
+          <FlowBox num="1" color={V.accent} title="Pick the metric (your OEC)" desc="One primary success metric, plus guardrails. Its sensitivity decides every number that follows." tag="OEC" />
+          <FlowArrow />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div style={{ background: V.tealBg, border: "1px dashed " + V.teal + "66", borderRadius: 999, padding: "8px 18px", fontSize: 13, fontWeight: 600, color: V.text, fontFamily: V.font, textAlign: "center" }}>{"\u25c7"} Enough traffic to detect a meaningful MDE on it?</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+            <div style={{ background: V.orangeBg, border: "1px solid " + V.orange + "33", borderRadius: V.radiusSm, padding: "10px 14px", fontSize: 12.5, color: V.textSecondary, fontFamily: V.font, lineHeight: 1.5 }}><strong style={{ color: V.orange }}>{"No \u2192 "}</strong>move up-funnel (add-to-cart, not purchase) or accept a bigger MDE.</div>
+            <div style={{ background: V.greenBg, border: "1px solid " + V.green + "33", borderRadius: V.radiusSm, padding: "10px 14px", fontSize: 12.5, color: V.textSecondary, fontFamily: V.font, lineHeight: 1.5 }}><strong style={{ color: V.green }}>{"Yes \u2192 "}</strong>lock the metric and move on.</div>
+          </div>
+          <FlowArrow />
+          <FlowBox num="2" color={V.green} title="Design the test" desc="Baseline + MDE + confidence + power give you sample size and duration. Write the analysis plan down first." tag="Design tabs" />
+          <FlowArrow />
+          <FlowBox num="3" color={V.orange} title="Choose the testing method" desc="Fixed-horizon, Bayesian, or sequential. This decides whether you may peek and which number you read." />
+          <FlowArrow />
+          <FlowBox num="4" color={V.purple} title="Run, then interpret" desc="Four signals: p-value (noise?), power (could we see it?), P-Move (will it hold?), guardrails (any harm?)." tag="Decide tab" />
+          <FlowArrow />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div style={{ background: V.text, color: "#fff", borderRadius: 999, padding: "9px 22px", fontSize: 13, fontWeight: 700, fontFamily: V.font, letterSpacing: 0.3 }}>{"Ship \u00b7 Hold \u00b7 Extend \u00b7 Kill"}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Step 1: Picking your metric */}
+      <div style={{ marginBottom: 48 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: V.accent, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12, fontFamily: V.font }}>{"Step 1 \u00b7 Picking your metric"}</div>
+        <p style={{ fontSize: 14, color: V.textSecondary, fontFamily: V.font, margin: "0 0 16px", lineHeight: 1.6 }}>The whole experiment inherits the metric you choose. A good primary metric is sensitive to your change, has enough traffic to move within a sane MDE, and ties to real value. Run every candidate through four questions:</p>
+        <div style={{ background: V.surface, borderRadius: V.radiusLg, border: "1px solid " + V.borderLight, boxShadow: V.shadow, padding: "8px 0", marginBottom: 16 }}>
+          {[
+            { n: "Directness", t: "Does this metric move when THIS change works? A checkout redesign should move checkout success, not site-wide DAU." },
+            { n: "Sensitivity", t: "Will it react quickly, or is it buried under noise and lag? Prefer the closest measurable step to the change." },
+            { n: "Traffic vs MDE", t: "How much traffic actually reaches it? Deep-funnel metrics need bold MDEs or they run for months (see the MDE example below)." },
+            { n: "Value", t: "Does moving it actually matter to the business, or is it a vanity proxy that looks good and means little?" },
+          ].map((r, i, arr) => (
+            <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "13px 20px", borderBottom: i < arr.length - 1 ? "1px solid " + V.borderLight : "none" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: V.accent, fontFamily: V.font, minWidth: 110 }}>{r.n}</div>
+              <div style={{ fontSize: 13, color: V.textSecondary, fontFamily: V.font, lineHeight: 1.55 }}>{r.t}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: V.tealBg, borderRadius: V.radius, padding: "16px 20px" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: V.teal, fontFamily: V.font, marginBottom: 6 }}>{"\ud83d\udd2c"} Worked example: a new product-reviews module</div>
+          <div style={{ fontSize: 13, color: V.textSecondary, lineHeight: 1.65, fontFamily: V.font }}>Candidate primaries: (a) purchase rate, (b) add-to-cart rate, (c) time on page. Purchase rate is the most valuable but sits deepest in the funnel: low traffic, needs a big MDE. Time on page has tons of traffic but is a weak proxy (longer can mean confused, not engaged). Add-to-cart is the sweet spot: close to the change, decent traffic, tied to revenue. Make it the primary, and keep purchase rate and time-on-page as secondaries to explain the why.</div>
+        </div>
+      </div>
+
+      {/* Step 3: Choosing your testing method */}
+      <div style={{ marginBottom: 48 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: V.orange, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12, fontFamily: V.font }}>{"Step 3 \u00b7 Choosing your testing method"}</div>
+        <p style={{ fontSize: 14, color: V.textSecondary, fontFamily: V.font, margin: "0 0 16px", lineHeight: 1.6 }}>Same data, three ways to decide. Your method choice decides one thing above all: whether you are allowed to peek at the results early.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
+          {[
+            { name: "Fixed-horizon", school: "Frequentist", color: V.accent, how: "Lock the sample size up front, run to the end, read the p-value once.", peek: "No peeking", when: "The default. Clear hypothesis and you can wait for the full sample." },
+            { name: "Bayesian", school: "Probability-to-beat", color: V.green, how: "Track the P-Move (chance the variant beats control) as data arrives; the prior tempers early spikes.", peek: "Peek freely", when: "You want a running ship-probability and have history to form a prior." },
+            { name: "Sequential", school: "Frequentist + guardrails", color: V.orange, how: "Thresholds tighten so repeated looks do not inflate error; stop the moment evidence is decisive.", peek: "Safe peeking", when: "You want to stop early on clear winners or losers without cheating." },
+          ].map((m, i) => (
+            <div key={i} style={{ background: V.surface, border: "1px solid " + V.borderLight, borderTop: "3px solid " + m.color, borderRadius: V.radius, padding: "16px 18px", boxShadow: V.shadow }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: V.text, fontFamily: V.font }}>{m.name}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: m.color, fontFamily: V.font, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 10 }}>{m.school}</div>
+              <div style={{ fontSize: 12.5, color: V.textSecondary, fontFamily: V.font, lineHeight: 1.55, marginBottom: 10 }}>{m.how}</div>
+              <div style={{ display: "inline-block", fontSize: 11, fontWeight: 700, color: m.color, background: m.color + "12", padding: "3px 9px", borderRadius: 6, fontFamily: V.font, marginBottom: 10 }}>{m.peek}</div>
+              <div style={{ fontSize: 12, color: V.textTertiary, fontFamily: V.font, lineHeight: 1.5 }}><strong style={{ color: V.textSecondary }}>Use when:</strong> {m.when}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 4: p-value vs power vs P-Move */}
+      <div style={{ marginBottom: 48 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: V.purple, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12, fontFamily: V.font }}>{"Step 4 \u00b7 p-value vs power vs P-Move"}</div>
+        <p style={{ fontSize: 14, color: V.textSecondary, fontFamily: V.font, margin: "0 0 16px", lineHeight: 1.6 }}>Three numbers people constantly confuse. They answer three different questions at three different moments. Here is the whole distinction on one screen:</p>
+        <div style={{ background: V.surface, borderRadius: V.radiusLg, border: "1px solid " + V.borderLight, boxShadow: V.shadow, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: V.font, fontSize: 13, minWidth: 600 }}>
+              <thead><tr style={{ background: V.surfaceAlt }}>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: 700, color: V.textTertiary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}></th>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: 800, color: V.accent, fontSize: 13 }}>p-value</th>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: 800, color: V.purple, fontSize: 13 }}>Power</th>
+                <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: 800, color: V.green, fontSize: 13 }}>P-Move</th>
+              </tr></thead>
+              <tbody>{[
+                ["The question", "Could this be just noise?", "Could we even detect a real effect?", "Will it actually hold in production?"],
+                ["When it matters", "After the test", "Before (you design it in) and after", "After the test"],
+                ["School of stats", "Frequentist", "Frequentist", "Bayesian"],
+                ["A bad value means", "High p: looks like random noise, do not trust it", "Low power: the test was blind, 'no effect' is meaningless", "Low P-Move: it will probably not replicate"],
+                ["In one line", "The noise filter", "The sharpness of your lens", "The business compass"],
+              ].map((row, ri) => (
+                <tr key={ri} style={{ borderTop: "1px solid " + V.borderLight }}>
+                  <td style={{ padding: "12px 16px", fontWeight: 700, color: V.textSecondary, fontFamily: V.font, whiteSpace: "nowrap" }}>{row[0]}</td>
+                  <td style={{ padding: "12px 16px", color: V.text, lineHeight: 1.5 }}>{row[1]}</td>
+                  <td style={{ padding: "12px 16px", color: V.text, lineHeight: 1.5 }}>{row[2]}</td>
+                  <td style={{ padding: "12px 16px", color: V.text, lineHeight: 1.5 }}>{row[3]}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+          <div style={{ background: V.surfaceAlt, padding: "14px 16px", borderTop: "1px solid " + V.borderLight, fontSize: 13, color: V.textSecondary, fontFamily: V.font, lineHeight: 1.6 }}>
+            <strong style={{ color: V.text }}>Together:</strong> power decides whether you <em>could</em> see the effect, the p-value decides whether what you saw is more than noise, and the P-Move decides whether it will still be true next week. You need all three.
+          </div>
+        </div>
+      </div>
+
       {/* Concepts */}
       <div style={{ marginBottom: 48 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: V.textTertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12, fontFamily: V.font }}>Core Concepts</div>
-        <p style={{ fontSize: 14, color: V.textSecondary, fontFamily: V.font, margin: "0 0 16px", lineHeight: 1.6 }}>Tap each to expand. Read in order {"\u2014"} each builds on the last.</p>
+        <div style={{ fontSize: 11, fontWeight: 700, color: V.textTertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12, fontFamily: V.font }}>Concept Reference</div>
+        <p style={{ fontSize: 14, color: V.textSecondary, fontFamily: V.font, margin: "0 0 16px", lineHeight: 1.6 }}>The nine ideas behind the course, each with plain analogies and a worked example. Tap any to expand.</p>
         <div style={{ background: V.surface, borderRadius: V.radiusLg, border: "1px solid " + V.borderLight, boxShadow: V.shadow, overflow: "hidden" }}>
           {CONCEPTS.map((c, i) => (
             <div key={c.id}>
